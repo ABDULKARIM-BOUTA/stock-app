@@ -11,7 +11,7 @@
             {% for company in companies %}
                 <div class="company-item">
                     <a href="{% url 'stocks:stock_chart' ticker=company.ticker %}">
-                        {{ company.name }} ({{ company.ticker }})
+                        {{ company.name }}
                     </a>
                 </div>
             {% endfor %}
