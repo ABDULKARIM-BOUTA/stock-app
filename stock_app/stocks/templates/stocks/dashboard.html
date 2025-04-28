@@ -1,21 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Stock Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { display: flex; font-family: Arial, sans-serif; }
+        .sidebar { width: 250px; height: 100vh; overflow-y: scroll; background: #f0f0f0; padding: 10px; }
+        .sidebar a { display: block; margin-bottom: 8px; text-decoration: none; color: black; }
+        .sidebar a:hover { background: #ddd; }
+        .content { flex-grow: 1; padding: 20px; }
+    </style>
 </head>
 <body>
-    <h1>Stock Market Dashboard</h1>
-    <div class="container">
-        <div class="company-list">
-            <h2>Companies</h2>
-            {% for company in companies %}
-                <div class="company-item">
-                    <a href="{% url 'stocks:stock_chart' ticker=company.ticker %}">
-                        {{ company.name }}
-                    </a>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+
+<div class="sidebar">
+    <h3>Companies</h3>
+    {% for company in companies %}
+        <a href="{% url 'stock_dashboard_company' company.id %}">
+            {{ company.name }}
+        </a>
+    {% endfor %}
+</div>
+
+<div class="content">
+    {% if selected_company %}
+        <h2>{{ selected_company.name }} Stock Prices</h2>
+        <canvas id="stockChart" width="800" height="400"></canvas>
+
+        <script>
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            const stockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [{% for data in stock_data %}"{{ data.date }}",{% endfor %}],
+                    datasets: [{
+                        label: 'Closing Price',
+                        data: [{% for data in stock_data %}{{ data.close }},{% endfor %}],
+                        fill: false,
+                        borderColor: 'blue',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { display: true, title: { display: true, text: 'Date' }},
+                        y: { display: true, title: { display: true, text: 'Closing Price' }}
+                    }
+                }
+            });
+        </script>
+    {% else %}
+        <h2>Select a company to view its stock chart</h2>
+    {% endif %}
+</div>
+
 </body>
 </html>

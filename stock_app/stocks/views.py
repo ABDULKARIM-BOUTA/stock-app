@@ -1,17 +1,18 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Company, StockData
+from stocks.models import Company, StockData
 
+def stock_dashboard(request, company_id=None):
+    companies = Company.objects.all().order_by('name')
 
-def dashboard(request):
-    companies = Company.objects.all()
-    return render(request, 'stocks/dashboard.html', {'companies': companies})
+    selected_company = None
+    stock_data = []
 
-def stock_chart(request, ticker):
-    # No need to unquote since path converter handles it
-    company = get_object_or_404(Company, ticker=ticker)
+    if company_id:
+        selected_company = get_object_or_404(Company, id=company_id)
+        stock_data = StockData.objects.filter(company=selected_company).order_by('date')
 
-    # Your chart rendering logic here
-    return render(request, 'stocks/chart.html', {
-        'company': company,
-        'ticker': ticker
+    return render(request, 'stocks/dashboard.html', {
+        'companies': companies,
+        'selected_company': selected_company,
+        'stock_data': stock_data,
     })
