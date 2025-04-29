@@ -18,7 +18,7 @@ class StockData(models.Model):
     volume = models.IntegerField()
     points_change = models.FloatField(null=True, blank=True)
     change_percent = models.FloatField(null=True, blank=True)
-    turnover = models.FloatField(null=True, blank=True)
+    turnover_rs_cr = models.FloatField(null=True, blank=True)
     pe_ratio = models.FloatField(null=True, blank=True)
     pb_ratio = models.FloatField(null=True, blank=True)
     div_yield = models.FloatField(null=True, blank=True)

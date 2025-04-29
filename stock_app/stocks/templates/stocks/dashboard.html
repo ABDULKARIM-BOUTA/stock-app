@@ -10,48 +10,108 @@
         .sidebar a { display: block; margin-bottom: 8px; text-decoration: none; color: black; }
         .sidebar a:hover { background: #ddd; }
         .content { flex-grow: 1; padding: 20px; }
+        canvas { margin-bottom: 40px; }
     </style>
 </head>
 <body>
 
+<style>
+    body { display: flex; font-family: Arial, sans-serif; height: 100vh; margin: 0; }
+    .sidebar {
+        width: 250px;
+        background: #f0f0f0;
+        padding: 10px;
+        overflow-y: auto;
+    }
+    .sidebar a {
+        display: block;
+        margin-bottom: 8px;
+        text-decoration: none;
+        color: black;
+    }
+    .sidebar a:hover {
+        background: #ddd;
+    }
+    .content {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    canvas {
+        width: 100% !important;
+        max-height: 250px !important;
+        margin-bottom: 30px;
+    }
+</style>
+
+
 <div class="sidebar">
     <h3>Companies</h3>
     {% for company in companies %}
-        <a href="{% url 'stock_dashboard_company' company.id %}">
-            {{ company.name }}
-        </a>
+        <a href="{% url 'stocks:stock_dashboard_company' company.id %}">{{ company.name }}</a>
     {% endfor %}
 </div>
 
 <div class="content">
     {% if selected_company %}
-        <h2>{{ selected_company.name }} Stock Prices</h2>
-        <canvas id="stockChart" width="800" height="400"></canvas>
+        <h2>{{ selected_company.name }} Stock Charts</h2>
 
+        {% comment %} Define labels {% endcomment %}
         <script>
-            const ctx = document.getElementById('stockChart').getContext('2d');
-            const stockChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [{% for data in stock_data %}"{{ data.date }}",{% endfor %}],
-                    datasets: [{
-                        label: 'Closing Price',
-                        data: [{% for data in stock_data %}{{ data.close }},{% endfor %}],
-                        fill: false,
-                        borderColor: 'blue',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: { display: true, title: { display: true, text: 'Date' }},
-                        y: { display: true, title: { display: true, text: 'Closing Price' }}
+            const labels = [{% for data in stock_data %}"{{ data.date }}",{% endfor %}];
+
+            function renderChart(canvasId, label, color, dataArray) {
+                new Chart(document.getElementById(canvasId), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: label,
+                            data: dataArray,
+                            fill: false,
+                            borderColor: color,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { display: true, title: { display: true, text: 'Date' }},
+                            y: { display: true, title: { display: true, text: label }}
+                        }
                     }
-                }
-            });
+                });
+            }
+
+            window.onload = function () {
+                renderChart("openChart", "Open Price", "blue", [{% for d in stock_data %}{{ d.open|default:0 }},{% endfor %}]);
+                renderChart("highChart", "High Price", "green", [{% for d in stock_data %}{{ d.high|default:0 }},{% endfor %}]);
+                renderChart("lowChart", "Low Price", "orange", [{% for d in stock_data %}{{ d.low|default:0 }},{% endfor %}]);
+                renderChart("closeChart", "Closing Price", "purple", [{% for d in stock_data %}{{ d.close|default:0 }},{% endfor %}]);
+                renderChart("pointsChart", "Points Change", "red", [{% for d in stock_data %}{{ d.points_change|default:0 }},{% endfor %}]);
+                renderChart("percentChart", "Change Percent", "teal", [{% for d in stock_data %}{{ d.change_percent|default:0 }},{% endfor %}]);
+                renderChart("volumeChart", "Volume", "brown", [{% for d in stock_data %}{{ d.volume|default:0 }},{% endfor %}]);
+                renderChart("turnoverChart", "Turnover (Rs Cr)", "magenta", [{% for d in stock_data %}{{ d.turnover_rs_cr|default:0 }},{% endfor %}]);
+                renderChart("peChart", "PE Ratio", "gray", [{% for d in stock_data %}{{ d.pe_ratio|default:0 }},{% endfor %}]);
+                renderChart("pbChart", "PB Ratio", "darkcyan", [{% for d in stock_data %}{{ d.pb_ratio|default:0 }},{% endfor %}]);
+                renderChart("divChart", "Dividend Yield", "gold", [{% for d in stock_data %}{{ d.div_yield|default:0 }},{% endfor %}]);
+            };
         </script>
+
+        <canvas id="openChart"></canvas>
+        <canvas id="highChart"></canvas>
+        <canvas id="lowChart"></canvas>
+        <canvas id="closeChart"></canvas>
+        <canvas id="pointsChart"></canvas>
+        <canvas id="percentChart"></canvas>
+        <canvas id="volumeChart"></canvas>
+        <canvas id="turnoverChart"></canvas>
+        <canvas id="peChart"></canvas>
+        <canvas id="pbChart"></canvas>
+        <canvas id="divChart"></canvas>
+
     {% else %}
-        <h2>Select a company to view its stock chart</h2>
+        <h2>Select a company to view its stock charts</h2>
     {% endif %}
 </div>
 
